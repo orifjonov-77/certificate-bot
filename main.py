@@ -2,6 +2,7 @@ import asyncio
 import logging
 import sys
 import os
+from aiohttp import web
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
@@ -12,44 +13,46 @@ from app.handlers import router
 from app.scheduler import start_result_scheduler
 from app.certificate import create_default_template
 
-# Log sozlamalari
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout)
-    ]
+    handlers=[logging.StreamHandler(sys.stdout)]
 )
 logger = logging.getLogger(__name__)
 
+# Render bepul Web Service portini ochish uchun oddiy health-check handler
+async def handle_ping(request):
+    return web.Response(text="MDev Certificate Bot is running healthy!")
+
+async def start_web_server():
+    port = int(os.getenv("PORT", 8080))
+    app = web.Application()
+    app.router.add_get("/", handle_ping)
+    app.router.add_get("/health", handle_ping)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+    logger.info(f"Render Web Service porti {port} da muvaffaqiyatli ochildi!")
+
 async def main():
     if not BOT_TOKEN or BOT_TOKEN == "1234567890:ABCdefGHIjklMNOpqrSTUvwxYZ":
-        logger.error(
-            "XATOLIK: .env faylida BOT_TOKEN ko'rsatilmagan! "
-            "Iltimos, .env faylini oching va @BotFather bergan tokenni kiriting."
-        )
+        logger.error("XATOLIK: BOT_TOKEN ko'rsatilmagan!")
         sys.exit(1)
 
-    # 1. Ma'lumotlar bazasini initsializatsiya qilish
     await init_db()
-    logger.info("Ma'lumotlar bazasi tayyor.")
-
-    # 2. Standart sertifikat shablonini tekshirish/yaratish
     create_default_template()
-    logger.info("Sertifikat shabloni tekshirildi.")
 
-    # 3. Bot va Dispatcher yaratish
+    # Render bepul serveri uchun veb-portni fonda ochamiz
+    await start_web_server()
+
     bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
     dp.include_router(router)
 
-    # 4. 15 daqiqalik kechiktirilgan natijalarni tekshiruvchi fon taskini ishga tushirish
     asyncio.create_task(start_result_scheduler(bot))
-    logger.info("Natijalarni yetkazish bo'yicha scheduler fonda ishga tushirildi.")
 
     logger.info("MDev Sertifikat Boti muvaffaqiyatli ishga tushdi! /start")
-    
-    # Eskirgan webhook va pending yangilanishlarni tozalash
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
