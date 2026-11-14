@@ -32,6 +32,20 @@ async def init_db():
                 test_result_id INTEGER UNIQUE
             )
         """)
+        # Eski bazadan qolgan bo'lsa ustunlarni avtomatik qo'shish (migratsiya)
+        try:
+            await db.execute("ALTER TABLE certificates ADD COLUMN test_result_id INTEGER UNIQUE")
+        except Exception:
+            pass
+        try:
+            await db.execute("ALTER TABLE certificates ADD COLUMN course TEXT")
+        except Exception:
+            pass
+        try:
+            await db.execute("ALTER TABLE certificates ADD COLUMN certificate_path TEXT")
+        except Exception:
+            pass
+
         # Foydalanuvchining ayni vaqtda faol testi bormi-yo'qligini tekshirish uchun jadval
         await db.execute("""
             CREATE TABLE IF NOT EXISTS active_sessions (
@@ -115,9 +129,9 @@ async def save_certificate(user_id: int, course: str, full_name: str, certificat
     async with aiosqlite.connect(DB_PATH) as db:
         now = datetime.now().isoformat()
         cursor = await db.execute(
-            """INSERT INTO certificates (user_id, course, full_name, issued_at, certificate_path, test_result_id)
-               VALUES (?, ?, ?, ?, ?, ?)""",
-            (user_id, course, full_name, now, certificate_path, test_result_id)
+            """INSERT INTO certificates (user_id, course, direction_name, full_name, issued_at, certificate_path, test_result_id)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (user_id, course, course, full_name, now, certificate_path, test_result_id)
         )
         await db.commit()
         return cursor.lastrowid

@@ -11,138 +11,194 @@ try:
 except ImportError:
     qrcode = None
 
+def get_font(name: str, size: int):
+    """Windows va boshqa tizimlarda shriftlarni xavfsiz yuklash"""
+    font_paths = [
+        name,
+        f"C:\\Windows\\Fonts\\{name}",
+        f"C:\\Windows\\Fonts\\arial.ttf",
+        f"C:\\Windows\\Fonts\\times.ttf"
+    ]
+    for p in font_paths:
+        try:
+            return ImageFont.truetype(p, size)
+        except Exception:
+            continue
+    return ImageFont.load_default()
+
 def create_default_template(path: str = TEMPLATE_PATH):
     """
-    Agar template.png mavjud bo'lmasa, yuqori sifatli sertifikat shablonini generatsiya qiladi.
+    Mukammal, hashamatli premium dizayndagi sertifikat shablonini generatsiya qiladi.
+    1920x1080 Full HD
     """
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    if os.path.exists(path):
-        return
-
     width, height = 1920, 1080
-    image = Image.new("RGB", (width, height), "#0b132b")
+
+    # To'q ko'k va chuqur gradient uslubidagi fon
+    image = Image.new("RGB", (width, height), "#080e1e")
     draw = ImageDraw.Draw(image)
 
-    border_color_gold = "#e0a96d"
-    border_color_light = "#1c2541"
-    
-    # Ramkalar
-    draw.rectangle([40, 40, width - 40, height - 40], outline=border_color_gold, width=4)
-    draw.rectangle([55, 55, width - 55, height - 55], outline=border_color_light, width=2)
-    draw.rectangle([70, 70, width - 70, height - 70], outline=border_color_gold, width=2)
+    # Bezak ranglari (Hashamatli oltin ranglar palitrasi)
+    gold_main = "#d4af37"      # Asosiy sof oltin
+    gold_bright = "#f3e5ab"    # Ochiq oltin
+    gold_dark = "#997a15"      # To'q oltin
+    accent_blue = "#00d2ff"    # Texnologik moviy urg'u
 
-    # Burchak bezaklari
-    for cx, cy in [(70, 70), (width - 70, 70), (70, height - 70), (width - 70, height - 70)]:
-        draw.rectangle([cx - 15, cy - 15, cx + 15, cy + 15], fill=border_color_gold)
+    # 1. Tashqi nozik oltin hoshiyalar
+    draw.rectangle([35, 35, width - 35, height - 35], outline=gold_dark, width=2)
+    draw.rectangle([45, 45, width - 45, height - 45], outline=gold_main, width=4)
+    draw.rectangle([55, 55, width - 55, height - 55], outline="#17223b", width=2)
+    draw.rectangle([70, 70, width - 70, height - 70], outline=gold_main, width=2)
 
-    try:
-        font_logo = ImageFont.truetype("arialbd.ttf", 64)
-        font_title = ImageFont.truetype("arialbd.ttf", 72)
-        font_sub = ImageFont.truetype("arial.ttf", 28)
-    except Exception:
-        font_logo = ImageFont.load_default()
-        font_title = ImageFont.load_default()
-        font_sub = ImageFont.load_default()
+    # 2. To'rtta burchakdagi geometrik hashamatli burchak bezaklari
+    c_size = 90
+    corners = [
+        (70, 70), 
+        (width - 70, 70), 
+        (70, height - 70), 
+        (width - 70, height - 70)
+    ]
+    for cx, cy in corners:
+        # Kichik romb/kvadratlar
+        draw.rectangle([cx - 16, cy - 16, cx + 16, cy + 16], fill="#080e1e", outline=gold_main, width=3)
+        draw.rectangle([cx - 8, cy - 8, cx + 8, cy + 8], fill=gold_main)
 
-    draw.text((width // 2, 160), "MDEV ACADEMY", fill="#48cae4", font=font_logo, anchor="mm")
-    draw.text((width // 2, 220), "MALAKANI BAHOLASH VA SERTIFIKATLASHTIRISH MARKAZI", fill="#adb5bd", font=font_sub, anchor="mm")
-    draw.text((width // 2, 330), "SERTIFIKAT", fill=border_color_gold, font=font_title, anchor="mm")
-    draw.line([(width // 2 - 250, 390), (width // 2 + 250, 390)], fill=border_color_gold, width=3)
-    draw.text((width // 2, 440), "Ushbu sertifikat muvaffaqiyatli test topshirgani uchun taqdim etiladi:", fill="#e0e1dd", font=font_sub, anchor="mm")
+    # 3. Markaziy fon uchun xira naqshsimon kontur
+    draw.rectangle([120, 120, width - 120, height - 120], outline="#101c38", width=1)
 
-    try:
-        font_footer = ImageFont.truetype("arial.ttf", 24)
-        font_footer_b = ImageFont.truetype("arialbd.ttf", 26)
-    except Exception:
-        font_footer = ImageFont.load_default()
-        font_footer_b = ImageFont.load_default()
+    # Shriftlar
+    font_brand = get_font("arialbd.ttf", 60)
+    font_sub_brand = get_font("arial.ttf", 22)
+    font_title = get_font("georgiab.ttf", 76)
+    font_intro = get_font("ariali.ttf", 26)
+    font_roles = get_font("arialbd.ttf", 22)
+    font_meta_lbl = get_font("arial.ttf", 18)
 
-    draw.line([(250, 920), (550, 920)], fill="#adb5bd", width=2)
-    draw.text((400, 950), "MDev Rahbari", fill="#adb5bd", font=font_footer, anchor="mm")
+    # Sarlavha: MDEV ACADEMY
+    draw.text((width // 2, 175), "MDEV ACADEMY", fill=accent_blue, font=font_brand, anchor="mm")
+    draw.text((width // 2, 230), "MALAKANI BAHOLASH VA SERTIFIKATLASHTIRISH MARKAZI", fill="#8a99ad", font=font_sub_brand, anchor="mm")
 
-    draw.line([(width - 550, 920), (width - 250, 920)], fill="#adb5bd", width=2)
-    draw.text((width - 400, 950), "Tekshirildi va Tasdiqlandi", fill="#adb5bd", font=font_footer, anchor="mm")
+    # Markaziy Oltin ajratuvchi chiziq va olmos
+    draw.line([(width // 2 - 350, 275), (width // 2 - 25, 275)], fill=gold_main, width=2)
+    draw.line([(width // 2 + 25, 275), (width // 2 + 350, 275)], fill=gold_main, width=2)
+    draw.polygon([(width // 2, 268), (width // 2 + 10, 275), (width // 2, 282), (width // 2 - 10, 275)], fill=gold_main)
+
+    # SERTIFIKAT yozuvi
+    draw.text((width // 2, 355), "SERTIFIKAT", fill=gold_bright, font=font_title, anchor="mm")
+    draw.text((width // 2, 425), "Ushbu sertifikat muvaffaqiyatli topshirilgan test natijasiga ko'ra taqdim etiladi:", fill="#c5d1e0", font=font_intro, anchor="mm")
+
+    # 4. O'ng tarafdagi Imzolar va Markaziy Muhr
+    # O'ng tarafdagi tasdiqlovchi imzolar bloki
+    right_x = width - 360
+    draw.line([(right_x - 170, 920), (right_x + 170, 920)], fill=gold_main, width=2)
+    draw.text((right_x, 948), "MDev Bosh Mutaxassisi", fill="#ffffff", font=font_roles, anchor="mm")
+    draw.text((right_x, 975), "Imzo va Tasdiq", fill="#8a99ad", font=font_meta_lbl, anchor="mm")
+
+    # Markazdagi MDev Rasmiy Muhri
+    seal_cx = width // 2 + 40
+    seal_cy = 910
+    draw.ellipse([seal_cx - 65, seal_cy - 65, seal_cx + 65, seal_cy + 65], outline=gold_main, width=3)
+    draw.ellipse([seal_cx - 57, seal_cy - 57, seal_cx + 57, seal_cy + 57], outline=gold_dark, width=1)
+    font_seal_b = get_font("arialbd.ttf", 20)
+    font_seal_s = get_font("arial.ttf", 15)
+    draw.text((seal_cx, seal_cy - 16), "★ MDEV ★", fill=gold_bright, font=font_seal_b, anchor="mm")
+    draw.text((seal_cx, seal_cy + 12), "VERIFIED", fill=accent_blue, font=font_seal_s, anchor="mm")
+    draw.text((seal_cx, seal_cy + 30), "ACADEMY", fill=gold_dark, font=font_seal_s, anchor="mm")
 
     image.save(path, format="PNG")
+    logger.info(f"Yangi sertifikat shabloni yaratildi: {path}")
 
 
-def generate_qr_code(url: str, size: int = 140) -> Image.Image:
-    """MDEV_URL havolasi uchun QR kod rasm hosil qiladi"""
+def generate_qr_code(url: str, size: int = 150) -> Image.Image:
+    """Oltin hoshiyali va oq fonli toza QR kod generatsiya qiladi"""
     if qrcode is not None:
         qr = qrcode.QRCode(
             version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_M,
+            error_correction=qrcode.constants.ERROR_CORRECT_H,
             box_size=10,
-            border=2,
+            border=1,
         )
         qr.add_data(url)
         qr.make(fit=True)
-        img = qr.make_image(fill_color="#0b132b", back_color="#ffffff").convert("RGBA")
+        img = qr.make_image(fill_color="#080e1e", back_color="#ffffff").convert("RGBA")
         return img.resize((size, size))
     else:
-        # qrcode o'rnatilmagan bo'lsa zaxira oq to'rtburchak
         placeholder = Image.new("RGBA", (size, size), "#ffffff")
         p_draw = ImageDraw.Draw(placeholder)
-        p_draw.text((size // 2, size // 2), "MDev QR", fill="#000000", anchor="mm")
+        p_draw.text((size // 2, size // 2), "QR KOD", fill="#000000", anchor="mm")
         return placeholder
 
 
 def make_certificate(full_name: str, course: str, score: int, cert_id: int, user_id: int) -> str:
     """
-    Foydalanuvchi ma'lumotlari va MDEV_URL QR kodi bilan tayyor sertifikat faylini 
-    output papkasida xavfsiz nom bilan yaratadi va yo'lini qaytaradi.
+    Foydalanuvchi ma'lumotlari, chap pastki burchakdagi aniq QR kod bilan Full HD mukammal sertifikat yaratadi.
     """
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    if not os.path.exists(TEMPLATE_PATH):
-        create_default_template(TEMPLATE_PATH)
+    
+    # Har doim mukammal shablonni yangilab olish
+    create_default_template(TEMPLATE_PATH)
 
     image = Image.open(TEMPLATE_PATH).convert("RGBA")
     draw = ImageDraw.Draw(image)
     width, height = image.size
 
-    # Shriftlarni yuklash
-    try:
-        font_name = ImageFont.truetype("arialbd.ttf", 68)
-        font_body = ImageFont.truetype("arial.ttf", 32)
-        font_meta = ImageFont.truetype("arial.ttf", 24)
-        font_qr_label = ImageFont.truetype("arial.ttf", 18)
-    except Exception:
-        font_name = ImageFont.load_default()
-        font_body = ImageFont.load_default()
-        font_meta = ImageFont.load_default()
-        font_qr_label = ImageFont.load_default()
+    # Shriftlar
+    font_name = get_font("arialbd.ttf", 66)
+    font_body = get_font("arial.ttf", 32)
+    font_course = get_font("arialbd.ttf", 38)
+    font_meta = get_font("arial.ttf", 26)
+    font_qr_title = get_font("arialbd.ttf", 17)
+    font_qr_url = get_font("arial.ttf", 15)
 
-    # Ism-familiya
+    # 1. Ism-familiya (Oq rang, markazda)
     clean_name = " ".join(full_name.split())
-    draw.text((width // 2, 540), clean_name.upper(), fill="#ffffff", font=font_name, anchor="mm")
+    draw.text((width // 2, 530), clean_name.upper(), fill="#ffffff", font=font_name, anchor="mm")
 
-    # Yo'nalish va natija matni
-    body_text = f"\"{course}\" yo'nalishi bo'yicha nazariy va amaliy test savollarini"
-    draw.text((width // 2, 630), body_text, fill="#caf0f8", font=font_body, anchor="mm")
-    
-    score_text = f"muvaffaqiyatli topshirdi va {score}/20 ball to'pladi."
-    draw.text((width // 2, 680), score_text, fill="#caf0f8", font=font_body, anchor="mm")
+    # Ism ostiga chiroyli oltin chiziq
+    name_w = len(clean_name) * 22
+    line_w = min(max(name_w, 300), 800)
+    draw.line([(width // 2 - line_w // 2, 580), (width // 2 + line_w // 2, 580)], fill="#d4af37", width=2)
 
-    # Sertifikat ID va sana
+    # 2. Yo'nalish va natija
+    body_text_1 = f"\"{course}\" yo'nalishi bo'yicha nazariy va amaliy test savollarini"
+    draw.text((width // 2, 635), body_text_1, fill="#b0c5e0", font=font_body, anchor="mm")
+
+    body_text_2 = f"muvaffaqiyatli topshirdi va  {score} / 20 ball  to'pladi."
+    draw.text((width // 2, 685), body_text_2, fill="#00d2ff", font=font_course, anchor="mm")
+
+    # 3. Sana va Sertifikat raqami
     date_str = datetime.now().strftime("%d.%m.%Y")
     cert_no = f"MDEV-{cert_id:05d}"
-    draw.text((width // 2, 750), f"Sana: {date_str}   |   Sertifikat №: {cert_no}", fill="#90e0ef", font=font_meta, anchor="mm")
+    meta_text = f"Berilgan sana: {date_str}      |      Sertifikat №: {cert_no}"
+    draw.text((width // 2, 755), meta_text, fill="#e5c158", font=font_meta, anchor="mm")
 
-    # QR kod joylashtirish (MDEV_URL manziliga yo'naltiruvchi)
-    target_url = MDEV_URL if MDEV_URL else "https://mdev.uz"
-    qr_img = generate_qr_code(target_url, size=130)
-    qr_x = (width - 130) // 2
-    qr_y = 825
+    # 4. CHAP PASTKI BURCHAKDAGI QR KOD (140x140 o'lchamda, qat'iy chap pastda)
+    target_url = MDEV_URL if MDEV_URL else "https://mdevsayt.uz"
+    qr_size = 145
+    qr_x = 120       # Chap burchak
+    qr_y = 835       # Pastki qism
+
+    # QR kod uchun oq fonga ega zamonaviy kartochka orqa foni
+    card_padding = 10
+    draw.rectangle(
+        [qr_x - card_padding, qr_y - card_padding, qr_x + qr_size + card_padding, qr_y + qr_size + card_padding + 35],
+        fill="#0d172e",
+        outline="#d4af37",
+        width=2
+    )
+
+    qr_img = generate_qr_code(target_url, size=qr_size)
     image.paste(qr_img, (qr_x, qr_y), qr_img)
 
-    # QR kod ostidagi yozuv
-    draw.text((width // 2, 970), f"Rasmiy tekshirish: {target_url}", fill="#e0a96d", font=font_qr_label, anchor="mm")
+    # QR kod ostidagi yozuvlar
+    draw.text((qr_x + qr_size // 2, qr_y + qr_size + 15), "SKANER QILING", fill="#00d2ff", font=font_qr_title, anchor="mm")
+    draw.text((qr_x + qr_size // 2, qr_y + qr_size + 30), "Rasmiy tekshirish", fill="#a0b2c6", font=font_qr_url, anchor="mm")
 
-    # Xavfsiz fayl nomi: har bir foydalanuvchi va sertifikat ID alohida saqlanadi
+    # Xavfsiz fayl saqlash
     output_filename = f"cert_{user_id}_{cert_id}.png"
     output_path = os.path.join(OUTPUT_DIR, output_filename)
-    
+
     rgb_image = image.convert("RGB")
-    rgb_image.save(output_path, format="PNG")
-    logger.info(f"Sertifikat yaratildi: {output_path}")
+    rgb_image.save(output_path, format="PNG", quality=98)
+    logger.info(f"Mukammal sertifikat generatsiya qilindi: {output_path}")
     return output_path

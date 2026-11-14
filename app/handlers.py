@@ -209,9 +209,14 @@ async def on_cert_declined(callback: CallbackQuery):
     await callback.answer()
 
 @router.callback_query(F.data.startswith("cert_yes:"))
-async def on_cert_accepted(callback: CallbackQuery, state: FSMContext):
+async def on_cert_accepted(callback: CallbackQuery, state: FSMContext, bot: Bot):
     user_id = callback.from_user.id
-    result_id = int(callback.data.split(":")[1])
+    try:
+        result_id = int(callback.data.split(":")[1])
+    except Exception as e:
+        logger.error(f"Invalid callback data: {callback.data}, error: {e}")
+        await callback.answer("Xatolik yuz berdi.", show_alert=True)
+        return
 
     # Natija ma'lumotlarini olish
     async with database.aiosqlite.connect(database.DB_PATH) as db:
@@ -234,7 +239,8 @@ async def on_cert_accepted(callback: CallbackQuery, state: FSMContext):
         await callback.answer("Ushbu test uchun sertifikat allaqachon berilgan!", show_alert=True)
         if os.path.exists(existing_cert["certificate_path"]):
             photo = FSInputFile(existing_cert["certificate_path"])
-            await callback.message.answer_photo(
+            await bot.send_photo(
+                chat_id=user_id,
                 photo=photo,
                 caption=f"Sizning ushbu test bo'yicha oldin olingan sertifikatingiz ({existing_cert['course']})."
             )
@@ -253,8 +259,12 @@ async def on_cert_accepted(callback: CallbackQuery, state: FSMContext):
         f"<i>(Masalan: Rustam Karimov)</i>\n\n"
         f"⚠️ <i>Eslatma: 2 dan 40 tagacha harflardan iborat bo'lishi lozim.</i>"
     )
-    await callback.message.answer(prompt_text, parse_mode="HTML")
-    await callback.answer()
+    try:
+        await bot.send_message(chat_id=user_id, text=prompt_text, parse_mode="HTML")
+        await callback.answer()
+    except Exception as e:
+        logger.error(f"Error sending name prompt: {e}")
+        await callback.answer("Xatolik yuz berdi.", show_alert=True)
 
 @router.message(QuizStates.awaiting_name)
 async def on_name_submitted(message: Message, state: FSMContext, bot: Bot):
