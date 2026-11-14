@@ -36,9 +36,12 @@ async def start_web_server():
     logger.info(f"Render Web Service porti {port} da muvaffaqiyatli ochildi!")
 
 async def main():
-    if not BOT_TOKEN or BOT_TOKEN == "1234567890:ABCdefGHIjklMNOpqrSTUvwxYZ":
+    token = os.getenv("BOT_TOKEN", "").strip() or BOT_TOKEN.strip()
+    if not token or token == "1234567890:ABCdefGHIjklMNOpqrSTUvwxYZ":
         logger.error("XATOLIK: BOT_TOKEN ko'rsatilmagan!")
         sys.exit(1)
+
+    logger.info(f"O'qilgan token uzunligi: {len(token)}, boshi: {token[:6]}..., oxiri: ...{token[-4:]}")
 
     await init_db()
     create_default_template()
@@ -46,7 +49,7 @@ async def main():
     # Render bepul serveri uchun veb-portni fonda ochamiz
     await start_web_server()
 
-    bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    bot = Bot(token=token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
     dp.include_router(router)
 
