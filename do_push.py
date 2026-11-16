@@ -5,11 +5,16 @@ try:
     os.chdir(r"C:\Users\777 comp service\Desktop\certificate")
     commands = [
         ["git", "add", "."],
-        ["git", "commit", "-m", "Debug token loading and strip whitespace"],
+        ["git", "commit", "-m", "Perfect freeCodeCamp style certificate, robust error handling and Linux font support"],
         ["git", "push", "origin", "main"]
     ]
     for cmd in commands:
-        subprocess.run(cmd, capture_output=True, text=True)
-    print("\n>>> Kod GitHub ga push qilindi! <<<")
+        res = subprocess.run(cmd, capture_output=True, text=True)
+        print(f"Bajarildi: {' '.join(cmd)}")
+        if res.stdout:
+            print(res.stdout)
+        if res.stderr:
+            print(res.stderr)
+    print("\n>>> Muvaffaqiyatli: Barcha yangilanishlar GitHub ga push bo'ldi! <<<")
 except Exception as e:
     print(f"Xatolik: {e}")

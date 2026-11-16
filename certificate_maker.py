@@ -12,12 +12,20 @@ except ImportError:
     qrcode = None
 
 def get_font(name: str, size: int):
-    """Windows va boshqa tizimlarda shriftlarni xavfsiz yuklash"""
+    """Linux (Render) va Windows tizimlarida shriftlarni xavfsiz yuklash"""
     font_paths = [
         name,
+        # Linux shrift yo'llari (Render / Debian / Ubuntu)
+        f"/usr/share/fonts/truetype/dejavu/{name}",
+        f"/usr/share/fonts/truetype/freefont/{name}",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
+        # Windows shrift yo'llari
         f"C:\\Windows\\Fonts\\{name}",
-        f"C:\\Windows\\Fonts\\arial.ttf",
-        f"C:\\Windows\\Fonts\\times.ttf"
+        "C:\\Windows\\Fonts\\arialbd.ttf",
+        "C:\\Windows\\Fonts\\arial.ttf",
+        "C:\\Windows\\Fonts\\georgiab.ttf"
     ]
     for p in font_paths:
         try:
@@ -26,179 +34,195 @@ def get_font(name: str, size: int):
             continue
     return ImageFont.load_default()
 
-def create_default_template(path: str = TEMPLATE_PATH):
+def draw_ribbon_badge(draw: ImageDraw.ImageDraw, cx: int, cy: int):
     """
-    Mukammal, hashamatli premium dizayndagi sertifikat shablonini generatsiya qiladi.
-    1920x1080 Full HD
+    freeCodeCamp sertifikatidagi kabi o'ng pastki burchakdagi medalli nishon (badge/ribbon).
+    To'q ko'k / qora rangli dumaloq nishon va pastga tushgan lentalar.
     """
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    width, height = 1920, 1080
+    badge_color = "#0a0a23"
+    r = 65
+    
+    # 1. Pastga tushuvchi ikkita lenta (ribbons)
+    # Chap lenta
+    draw.polygon([
+        (cx - 35, cy + 20),
+        (cx - 50, cy + 120),
+        (cx - 25, cy + 100),
+        (cx - 10, cy + 120),
+        (cx - 10, cy + 20)
+    ], fill=badge_color)
+    
+    # O'ng lenta
+    draw.polygon([
+        (cx + 10, cy + 20),
+        (cx + 10, cy + 120),
+        (cx + 25, cy + 100),
+        (cx + 50, cy + 120),
+        (cx + 35, cy + 20)
+    ], fill=badge_color)
 
-    # To'q ko'k va chuqur gradient uslubidagi fon
-    image = Image.new("RGB", (width, height), "#080e1e")
-    draw = ImageDraw.Draw(image)
+    # 2. Asosiy doira
+    draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=badge_color, outline="#ffffff", width=3)
+    # Ichki doira
+    draw.ellipse([cx - r + 8, cy - r + 8, cx + r - 8, cy + r - 8], outline="#ffffff", width=2)
 
-    # Bezak ranglari (Hashamatli oltin ranglar palitrasi)
-    gold_main = "#d4af37"      # Asosiy sof oltin
-    gold_bright = "#f3e5ab"    # Ochiq oltin
-    gold_dark = "#997a15"      # To'q oltin
-    accent_blue = "#00d2ff"    # Texnologik moviy urg'u
-
-    # 1. Tashqi nozik oltin hoshiyalar
-    draw.rectangle([35, 35, width - 35, height - 35], outline=gold_dark, width=2)
-    draw.rectangle([45, 45, width - 45, height - 45], outline=gold_main, width=4)
-    draw.rectangle([55, 55, width - 55, height - 55], outline="#17223b", width=2)
-    draw.rectangle([70, 70, width - 70, height - 70], outline=gold_main, width=2)
-
-    # 2. To'rtta burchakdagi geometrik hashamatli burchak bezaklari
-    c_size = 90
-    corners = [
-        (70, 70), 
-        (width - 70, 70), 
-        (70, height - 70), 
-        (width - 70, height - 70)
-    ]
-    for cx, cy in corners:
-        # Kichik romb/kvadratlar
-        draw.rectangle([cx - 16, cy - 16, cx + 16, cy + 16], fill="#080e1e", outline=gold_main, width=3)
-        draw.rectangle([cx - 8, cy - 8, cx + 8, cy + 8], fill=gold_main)
-
-    # 3. Markaziy fon uchun xira naqshsimon kontur
-    draw.rectangle([120, 120, width - 120, height - 120], outline="#101c38", width=1)
-
-    # Shriftlar
-    font_brand = get_font("arialbd.ttf", 60)
-    font_sub_brand = get_font("arial.ttf", 22)
-    font_title = get_font("georgiab.ttf", 76)
-    font_intro = get_font("ariali.ttf", 26)
-    font_roles = get_font("arialbd.ttf", 22)
-    font_meta_lbl = get_font("arial.ttf", 18)
-
-    # Sarlavha: MDEV ACADEMY
-    draw.text((width // 2, 175), "MDEV ACADEMY", fill=accent_blue, font=font_brand, anchor="mm")
-    draw.text((width // 2, 230), "MALAKANI BAHOLASH VA SERTIFIKATLASHTIRISH MARKAZI", fill="#8a99ad", font=font_sub_brand, anchor="mm")
-
-    # Markaziy Oltin ajratuvchi chiziq va olmos
-    draw.line([(width // 2 - 350, 275), (width // 2 - 25, 275)], fill=gold_main, width=2)
-    draw.line([(width // 2 + 25, 275), (width // 2 + 350, 275)], fill=gold_main, width=2)
-    draw.polygon([(width // 2, 268), (width // 2 + 10, 275), (width // 2, 282), (width // 2 - 10, 275)], fill=gold_main)
-
-    # SERTIFIKAT yozuvi
-    draw.text((width // 2, 355), "SERTIFIKAT", fill=gold_bright, font=font_title, anchor="mm")
-    draw.text((width // 2, 425), "Ushbu sertifikat muvaffaqiyatli topshirilgan test natijasiga ko'ra taqdim etiladi:", fill="#c5d1e0", font=font_intro, anchor="mm")
-
-    # 4. O'ng tarafdagi Imzolar va Markaziy Muhr
-    # O'ng tarafdagi tasdiqlovchi imzolar bloki
-    right_x = width - 360
-    draw.line([(right_x - 170, 920), (right_x + 170, 920)], fill=gold_main, width=2)
-    draw.text((right_x, 948), "MDev Bosh Mutaxassisi", fill="#ffffff", font=font_roles, anchor="mm")
-    draw.text((right_x, 975), "Imzo va Tasdiq", fill="#8a99ad", font=font_meta_lbl, anchor="mm")
-
-    # Markazdagi MDev Rasmiy Muhri
-    seal_cx = width // 2 + 40
-    seal_cy = 910
-    draw.ellipse([seal_cx - 65, seal_cy - 65, seal_cx + 65, seal_cy + 65], outline=gold_main, width=3)
-    draw.ellipse([seal_cx - 57, seal_cy - 57, seal_cx + 57, seal_cy + 57], outline=gold_dark, width=1)
-    font_seal_b = get_font("arialbd.ttf", 20)
-    font_seal_s = get_font("arial.ttf", 15)
-    draw.text((seal_cx, seal_cy - 16), "★ MDEV ★", fill=gold_bright, font=font_seal_b, anchor="mm")
-    draw.text((seal_cx, seal_cy + 12), "VERIFIED", fill=accent_blue, font=font_seal_s, anchor="mm")
-    draw.text((seal_cx, seal_cy + 30), "ACADEMY", fill=gold_dark, font=font_seal_s, anchor="mm")
-
-    image.save(path, format="PNG")
-    logger.info(f"Yangi sertifikat shabloni yaratildi: {path}")
+    # 3. Markaziy MDev belgisi (olov / qavs shakli)
+    font_icon = get_font("DejaVuSans-Bold.ttf", 36)
+    draw.text((cx, cy - 2), "( flame )" if False else "( M )", fill="#ffffff", font=font_icon, anchor="mm")
 
 
-def generate_qr_code(url: str, size: int = 150) -> Image.Image:
-    """Oltin hoshiyali va oq fonli toza QR kod generatsiya qiladi"""
+def draw_signature(draw: ImageDraw.ImageDraw, x: int, y: int):
+    """
+    freeCodeCamp sertifikatidagi kabi haqiqiy chiroyli vektorli dastxat (imzo).
+    """
+    sig_color = "#0a0a23"
+    # Haqiqiy qalam bilan yozilgandek tabiiy chiziqlar
+    points_1 = [(x - 60, y + 10), (x - 45, y - 35), (x - 20, y - 45), (x - 10, y + 5), (x - 50, y + 15), (x + 10, y - 30)]
+    points_2 = [(x + 10, y - 30), (x + 20, y + 10), (x + 35, y - 20), (x + 50, y + 5), (x + 65, y - 15)]
+    points_3 = [(x - 70, y - 5), (x - 30, y - 50), (x - 20, y + 25), (x + 80, y - 40)]
+    
+    for pts in [points_1, points_2, points_3]:
+        for i in range(len(pts) - 1):
+            draw.line([pts[i], pts[i+1]], fill=sig_color, width=3)
+
+
+def generate_qr_code(url: str, size: int = 170) -> Image.Image:
+    """PDF dagi kabi toza, sifatli kvadrat QR kod"""
     if qrcode is not None:
         qr = qrcode.QRCode(
             version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_H,
+            error_correction=qrcode.constants.ERROR_CORRECT_M,
             box_size=10,
             border=1,
         )
         qr.add_data(url)
         qr.make(fit=True)
-        img = qr.make_image(fill_color="#080e1e", back_color="#ffffff").convert("RGBA")
+        img = qr.make_image(fill_color="#0a0a23", back_color="#ffffff").convert("RGBA")
         return img.resize((size, size))
     else:
         placeholder = Image.new("RGBA", (size, size), "#ffffff")
         p_draw = ImageDraw.Draw(placeholder)
-        p_draw.text((size // 2, size // 2), "QR KOD", fill="#000000", anchor="mm")
+        p_draw.rectangle([0, 0, size-1, size-1], outline="#0a0a23", width=3)
+        p_draw.text((size // 2, size // 2), "QR CODE", fill="#0a0a23", anchor="mm")
         return placeholder
 
 
 def make_certificate(full_name: str, course: str, score: int, cert_id: int, user_id: int) -> str:
     """
-    Foydalanuvchi ma'lumotlari, chap pastki burchakdagi aniq QR kod bilan Full HD mukammal sertifikat yaratadi.
+    Aynan foydalanuvchi taqdim etgan PDF (freeCodeCamp) uslubidagi 100% professional sertifikat:
+    - Oq fon, to'q ko'k header paneli
+    - Chap pastda kvadrat QR kod
+    - O'rtada chiroyli imzo va lavozim
+    - O'ng pastda nishon (ribbon badge)
+    - Pastki verification URL
     """
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     
-    # Har doim mukammal shablonni yangilab olish
-    create_default_template(TEMPLATE_PATH)
-
-    image = Image.open(TEMPLATE_PATH).convert("RGBA")
+    # 1920 x 1357 - Xalqaro A4 proporsiyasidagi ultra yuqori aniqlik
+    width, height = 1920, 1360
+    image = Image.new("RGB", (width, height), "#ffffff")
     draw = ImageDraw.Draw(image)
-    width, height = image.size
 
     # Shriftlar
-    font_name = get_font("arialbd.ttf", 66)
-    font_body = get_font("arial.ttf", 32)
-    font_course = get_font("arialbd.ttf", 38)
-    font_meta = get_font("arial.ttf", 26)
-    font_qr_title = get_font("arialbd.ttf", 17)
-    font_qr_url = get_font("arial.ttf", 15)
+    font_brand = get_font("DejaVuSans-Bold.ttf", 52)
+    font_certifies = get_font("DejaVuSans.ttf", 34)
+    font_name = get_font("DejaVuSans-Bold.ttf", 68)
+    font_sub_comp = get_font("DejaVuSans.ttf", 34)
+    font_course = get_font("DejaVuSans-Bold.ttf", 74)
+    font_details = get_font("DejaVuSans.ttf", 32)
+    font_hours = get_font("DejaVuSans.ttf", 26)
+    font_signer_name = get_font("DejaVuSans-Bold.ttf", 28)
+    font_signer_title = get_font("DejaVuSans.ttf", 24)
+    font_verify_lbl = get_font("DejaVuSans.ttf", 20)
+    font_verify_url = get_font("DejaVuSans.ttf", 22)
 
-    # 1. Ism-familiya (Oq rang, markazda)
-    clean_name = " ".join(full_name.split())
-    draw.text((width // 2, 530), clean_name.upper(), fill="#ffffff", font=font_name, anchor="mm")
-
-    # Ism ostiga chiroyli oltin chiziq
-    name_w = len(clean_name) * 22
-    line_w = min(max(name_w, 300), 800)
-    draw.line([(width // 2 - line_w // 2, 580), (width // 2 + line_w // 2, 580)], fill="#d4af37", width=2)
-
-    # 2. Yo'nalish va natija
-    body_text_1 = f"\"{course}\" yo'nalishi bo'yicha nazariy va amaliy test savollarini"
-    draw.text((width // 2, 635), body_text_1, fill="#b0c5e0", font=font_body, anchor="mm")
-
-    body_text_2 = f"muvaffaqiyatli topshirdi va  {score} / 20 ball  to'pladi."
-    draw.text((width // 2, 685), body_text_2, fill="#00d2ff", font=font_course, anchor="mm")
-
-    # 3. Sana va Sertifikat raqami
-    date_str = datetime.now().strftime("%d.%m.%Y")
-    cert_no = f"MDEV-{cert_id:05d}"
-    meta_text = f"Berilgan sana: {date_str}      |      Sertifikat №: {cert_no}"
-    draw.text((width // 2, 755), meta_text, fill="#e5c158", font=font_meta, anchor="mm")
-
-    # 4. CHAP PASTKI BURCHAKDAGI QR KOD (140x140 o'lchamda, qat'iy chap pastda)
-    target_url = MDEV_URL if MDEV_URL else "https://mdevsayt.uz"
-    qr_size = 145
-    qr_x = 120       # Chap burchak
-    qr_y = 835       # Pastki qism
-
-    # QR kod uchun oq fonga ega zamonaviy kartochka orqa foni
-    card_padding = 10
+    # 1. Tashqi to'q ko'k hoshiya (PDF dagi kabi toza)
+    border_color = "#0a0a23"
+    border_margin = 40
+    border_width = 12
     draw.rectangle(
-        [qr_x - card_padding, qr_y - card_padding, qr_x + qr_size + card_padding, qr_y + qr_size + card_padding + 35],
-        fill="#0d172e",
-        outline="#d4af37",
-        width=2
+        [border_margin, border_margin, width - border_margin, height - border_margin],
+        outline=border_color,
+        width=border_width
     )
 
-    qr_img = generate_qr_code(target_url, size=qr_size)
+    # 2. Yuqori to'q ko'k lenta (Header bar)
+    header_top = border_margin + border_width
+    header_height = 110
+    draw.rectangle(
+        [header_top, header_top, width - header_top, header_top + header_height],
+        fill=border_color
+    )
+    
+    # Header matni: mdev ( flame ) yoki mdevAcademy
+    brand_text = "mdev ( \u2022 )"  # yoki MDev Academy
+    draw.text((width // 2, header_top + header_height // 2), "mdev( \u2764 ) academy", fill="#ffffff", font=font_brand, anchor="mm")
+
+    # 3. Asosiy matnlar (Markazda)
+    # This certifies that / Ushbu sertifikat tasdiqlaydi:
+    draw.text((width // 2, 275), "This certifies that", fill="#3b3a30", font=font_certifies, anchor="mm")
+
+    # Ism va Familiya (Katta, qalin, aniq)
+    clean_name = " ".join(full_name.split())
+    # Formatlash: Har bir so'z bosh harf bilan
+    formatted_name = " ".join([word.capitalize() for word in clean_name.split()])
+    draw.text((width // 2, 365), formatted_name, fill="#0a0a23", font=font_name, anchor="mm")
+
+    # successfully completed the / muvaffaqiyatli yakunladi:
+    draw.text((width // 2, 455), "successfully completed the", fill="#3b3a30", font=font_sub_comp, anchor="mm")
+
+    # Kurs yo'nalishi (Masalan: Python, Excel, HTML va CSS)
+    draw.text((width // 2, 545), course, fill="#0a0a23", font=font_course, anchor="mm")
+
+    # Qachon topshirilgani va sertifikat darajasi
+    months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    now = datetime.now()
+    month_name = months[now.month - 1]
+    date_str = f"{month_name} {now.day}, {now.year}"
+    
+    details_line = f"Developer Certification on {date_str}"
+    draw.text((width // 2, 635), details_line, fill="#3b3a30", font=font_details, anchor="mm")
+
+    # Natija va yuklama
+    sub_details = f"representing approximately {score * 15} hours of coursework and examination (Score: {score}/20)"
+    draw.text((width // 2, 695), sub_details, fill="#616161", font=font_hours, anchor="mm")
+
+    # 4. Imzo qismi (O'rtada, pastroqda)
+    sig_center_x = width // 2
+    sig_center_y = 820
+    draw_signature(draw, sig_center_x, sig_center_y - 20)
+    # Imzo ostidagi chiziq
+    draw.line([(sig_center_x - 180, sig_center_y + 15), (sig_center_x + 180, sig_center_y + 15)], fill="#0a0a23", width=2)
+    # Ism va lavozim
+    draw.text((sig_center_x, sig_center_y + 45), "Executive Director", fill="#0a0a23", font=font_signer_name, anchor="mm")
+    draw.text((sig_center_x, sig_center_y + 80), "MDev Educational Platform", fill="#5a5a5a", font=font_signer_title, anchor="mm")
+
+    # 5. CHAP PASTKI BURCHAKDAGI QR KOD (Aynan PDF dagi o'lcham va joyda)
+    base_verify_url = MDEV_URL if MDEV_URL else "https://mdevsayt.uz"
+    cert_code = f"mdev-{user_id}-{cert_id:04d}"
+    verify_full_url = f"{base_verify_url}/verify/{cert_code}"
+
+    qr_size = 180
+    qr_x = 110
+    qr_y = 860
+    qr_img = generate_qr_code(verify_full_url, size=qr_size)
     image.paste(qr_img, (qr_x, qr_y), qr_img)
 
-    # QR kod ostidagi yozuvlar
-    draw.text((qr_x + qr_size // 2, qr_y + qr_size + 15), "SKANER QILING", fill="#00d2ff", font=font_qr_title, anchor="mm")
-    draw.text((qr_x + qr_size // 2, qr_y + qr_size + 30), "Rasmiy tekshirish", fill="#a0b2c6", font=font_qr_url, anchor="mm")
+    # 6. O'NG PASTKI BURCHAKDAGI NISHON (Ribbon Badge)
+    badge_x = width - 190
+    badge_y = 940
+    draw_ribbon_badge(draw, badge_x, badge_y)
 
-    # Xavfsiz fayl saqlash
+    # 7. Eng pastdagi Verifikatsiya matni
+    footer_y = height - 120
+    draw.text((width // 2, footer_y), "Verify this certification at:", fill="#757575", font=font_verify_lbl, anchor="mm")
+    draw.text((width // 2, footer_y + 30), verify_full_url, fill="#0a0a23", font=font_verify_url, anchor="mm")
+
+    # Sertifikat faylini saqlash
     output_filename = f"cert_{user_id}_{cert_id}.png"
     output_path = os.path.join(OUTPUT_DIR, output_filename)
-
+    
     rgb_image = image.convert("RGB")
-    rgb_image.save(output_path, format="PNG", quality=98)
-    logger.info(f"Mukammal sertifikat generatsiya qilindi: {output_path}")
+    rgb_image.save(output_path, format="PNG", quality=100)
+    logger.info(f"Yangi PDF uslubidagi mukammal sertifikat yaratildi: {output_path}")
     return output_path

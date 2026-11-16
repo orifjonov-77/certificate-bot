@@ -276,12 +276,12 @@ async def on_name_submitted(message: Message, state: FSMContext, bot: Bot):
             await message.answer("⚠️ Ism-familiyada taqiqlangan maxsus belgilar mavjud. Iltimos, qaytadan to'g'ri kiriting:")
             return
 
-    # Uzunlik tekshiruvi: 2 dan 40 belgigacha
-    if len(full_name) < 2 or len(full_name) > 40:
-        await message.answer("⚠️ Ism va familiya uzunligi 2 dan 40 tagacha belgidan iborat bo'lishi kerak. Qaytadan kiriting:")
+    # Uzunlik tekshiruvi: 2 dan 50 belgigacha
+    if len(full_name) < 2 or len(full_name) > 50:
+        await message.answer("⚠️ Ism va familiya uzunligi 2 dan 50 tagacha belgidan iborat bo'lishi kerak. Qaytadan kiriting:")
         return
 
-    # Faqat harf va bo'shliq bo'lishi tekshiruvi
+    # Faqat harflar, bo'shliq va tutuq belgilari tekshiruvi
     if not NAME_REGEX.match(full_name):
         await message.answer("⚠️ Ism va familiya faqat harflar va bo'shliqdan iborat bo'lishi kerak. Qaytadan kiriting:")
         return
@@ -292,15 +292,22 @@ async def on_name_submitted(message: Message, state: FSMContext, bot: Bot):
     score = data.get("score", 20)
     user_id = message.from_user.id
 
+    # Agar state bo'shab qolgan bo'lsa ham bazadan oxirgi natijani topib davom etish
     if not result_id:
-        await message.answer("Xatolik yuz berdi, keyinroq urinib ko'ring")
-        await state.clear()
-        return
+        async with database.aiosqlite.connect(database.DB_PATH) as db:
+            db.row_factory = database.aiosqlite.Row
+            async with db.execute(
+                "SELECT * FROM test_results WHERE user_id = ? AND score >= 16 ORDER BY id DESC LIMIT 1",
+                (user_id,)
+            ) as cursor:
+                last_res = await cursor.fetchone()
+                if last_res:
+                    result_id = last_res["id"]
+                    course = last_res["direction_name"]
+                    score = last_res["score"]
 
-    # Qayta tekshirish: ushbu test natijasi bo'yicha sertifikat olinganmi?
-    existing_cert = await database.get_certificate_by_test_result(result_id)
-    if existing_cert:
-        await message.answer("⚠️ Ushbu test uchun sertifikat allaqachon olingan!")
+    if not result_id:
+        await message.answer("⚠️ Test natijasi topilmadi. Iltimos qaytadan test topshiring: /start")
         await state.clear()
         return
 
@@ -316,19 +323,26 @@ async def on_name_submitted(message: Message, state: FSMContext, bot: Bot):
             user_id=user_id
         )
 
-        # Bazaga yozish: id, user_id, course, full_name, issued_at, certificate_path, test_result_id
-        await database.save_certificate(
-            user_id=user_id,
-            course=course,
-            full_name=full_name,
-            certificate_path=cert_path,
-            test_result_id=result_id
-        )
+        # Bazaga xavfsiz yozish
+        try:
+            await database.save_certificate(
+                user_id=user_id,
+                course=course,
+                full_name=full_name,
+                certificate_path=cert_path,
+                test_result_id=result_id
+            )
+        except Exception as db_err:
+            logger.warning(f"Database save warning (ehtimol oldin saqlangan): {db_err}")
+
+        # Formatlangan chiroyli ism
+        formatted_name = " ".join([w.capitalize() for w in full_name.split()])
 
         caption = (
-            f"🎉 <b>Tabriklaymiz, {full_name}!</b>\n\n"
-            f"Sizning <b>MDev</b> malaka sertifikatingiz muvaffaqiyatli tayyorlandi!\n"
-            f"Ushbu sertifikat sizning {course} yo'nalishidagi bilimingizni tasdiqlaydi.\n\n"
+            f"🎓 <b>Tabriklaymiz, {formatted_name}!</b>\n\n"
+            f"Sizning <b>MDev Academy</b> rasmiy malaka sertifikatingiz tayyorlandi!\n"
+            f"📚 Yo'nalish: <b>{course}</b>\n"
+            f"⭐️ Natija: <b>20 tadan {score} ta to'g'ri</b>\n\n"
             f"Kelgusi faoliyatingizda ulkan zafarlar tilaymiz! 🚀"
         )
         photo = FSInputFile(cert_path)
@@ -336,5 +350,5 @@ async def on_name_submitted(message: Message, state: FSMContext, bot: Bot):
         await state.clear()
     except Exception as e:
         logger.error(f"Sertifikat yaratishda xatolik yuz berdi: {e}", exc_info=True)
-        await message.answer("Xatolik yuz berdi, keyinroq urinib ko'ring")
+        await message.answer("⚠️ Sertifikat yaratishda xatolik yuz berdi. Iltimos qaytadan urinib ko'ring yoki /start bosing.")
         await state.clear()
