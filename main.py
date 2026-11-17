@@ -11,7 +11,6 @@ from app.config import BOT_TOKEN
 from app.database import init_db
 from app.handlers import router
 from app.scheduler import start_result_scheduler
-from app.certificate import create_default_template
 
 logging.basicConfig(
     level=logging.INFO,
@@ -44,7 +43,6 @@ async def main():
     logger.info(f"O'qilgan token uzunligi: {len(token)}, boshi: {token[:6]}..., oxiri: ...{token[-4:]}")
 
     await init_db()
-    create_default_template()
 
     # Render bepul serveri uchun veb-portni fonda ochamiz
     await start_web_server()
