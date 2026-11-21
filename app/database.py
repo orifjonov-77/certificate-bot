@@ -6,6 +6,25 @@ from app.config import DB_PATH
 async def init_db():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     async with aiosqlite.connect(DB_PATH) as db:
+        # Adminlar jadvali
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS admins (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                phone TEXT UNIQUE,
+                user_id INTEGER UNIQUE,
+                role TEXT DEFAULT 'admin',
+                added_at TIMESTAMP NOT NULL
+            )
+        """)
+        # Boshlang'ich admin telefonlarini kiritish
+        from app.config import DEFAULT_ADMIN_PHONES
+        now = datetime.now().isoformat()
+        for p in ["+998951932546", "+998889810206"]:
+            await db.execute(
+                "INSERT OR IGNORE INTO admins (phone, role, added_at) VALUES (?, 'superadmin', ?)",
+                (p, now)
+            )
+
         # Test natijalari jadvali
         await db.execute("""
             CREATE TABLE IF NOT EXISTS test_results (
@@ -135,3 +154,59 @@ async def save_certificate(user_id: int, course: str, full_name: str, certificat
         )
         await db.commit()
         return cursor.lastrowid
+
+# ================= ADMIN FUNKSIYALARI =================
+async def is_admin(user_id: int) -> bool:
+    """Foydalanuvchi user_id bo'yicha admin ekanligini tekshirish"""
+    async with aiosqlite.connect(DB_PATH) as db:
+        async with db.execute("SELECT id FROM admins WHERE user_id = ?", (user_id,)) as cursor:
+            row = await cursor.fetchone()
+            return row is not None
+
+async def verify_admin_by_phone(user_id: int, phone: str) -> bool:
+    """Kontakt ulashganda telefon raqami adminlar ro'yxatida bo'lsa user_id ni bog'lash"""
+    # Raqamni tozalash (+998901234567 formatiga keltirish)
+    clean_phone = phone.strip()
+    if not clean_phone.startswith("+"):
+        clean_phone = "+" + clean_phone
+    
+    async with aiosqlite.connect(DB_PATH) as db:
+        # Telefon raqami bazada bormi?
+        async with db.execute("SELECT id FROM admins WHERE phone = ? OR phone = ?", (clean_phone, clean_phone.replace("+", ""))) as cursor:
+            row = await cursor.fetchone()
+            if row:
+                await db.execute("UPDATE admins SET user_id = ? WHERE id = ?", (user_id, row[0]))
+                await db.commit()
+                return True
+    return False
+
+async def add_admin_phone(phone: str) -> bool:
+    """Yangi admin telefon raqamini kiritish"""
+    clean_phone = phone.strip()
+    if not clean_phone.startswith("+"):
+        clean_phone = "+" + clean_phone
+    async with aiosqlite.connect(DB_PATH) as db:
+        now = datetime.now().isoformat()
+        try:
+            await db.execute(
+                "INSERT INTO admins (phone, role, added_at) VALUES (?, 'admin', ?)",
+                (clean_phone, now)
+            )
+            await db.commit()
+            return True
+        except Exception:
+            return False
+
+async def get_all_admins():
+    """Barcha adminlarni ro'yxatini olish"""
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute("SELECT * FROM admins ORDER BY id ASC") as cursor:
+            return await cursor.fetchall()
+
+async def remove_admin_by_id(admin_id: int):
+    """Adminni o'chirish"""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("DELETE FROM admins WHERE id = ? AND role != 'superadmin'", (admin_id,))
+        await db.commit()
+

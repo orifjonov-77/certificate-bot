@@ -10,6 +10,7 @@ from aiogram.client.default import DefaultBotProperties
 from app.config import BOT_TOKEN
 from app.database import init_db
 from app.handlers import router
+from app.admin_handlers import admin_router
 from app.scheduler import start_result_scheduler
 
 logging.basicConfig(
@@ -49,6 +50,7 @@ async def main():
 
     bot = Bot(token=token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher()
+    dp.include_router(admin_router)
     dp.include_router(router)
 
     asyncio.create_task(start_result_scheduler(bot))

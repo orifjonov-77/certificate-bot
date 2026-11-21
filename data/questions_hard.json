@@ -1,0 +1,252 @@
+{
+  "javascript": {
+    "title": "JavaScript",
+    "questions": [
+      {
+        "id": 1,
+        "question": "JavaScript Event Loop mexanizmida Microtask queue (Promise, queueMicrotask) va Macrotask queue (setTimeout, setInterval) bajarilish ketma-ketligi qanday?",
+        "options": {"A": "Macrotask har doim barcha microtasklardan oldin to'liq bajariladi", "B": "Joriy sinxron kod tugashi bilan Call Stack bo'shaganda, avval barcha microtasklar to'liq bajariladi, so'ng bitta macrotask olinadi", "C": "Ikkalasi parallel multithreading orqali bajariladi", "D": "Faqat Web Worker mavjud bo'lganda navbat bilan ishlaydi"},
+        "answer": "B"
+      },
+      {
+        "id": 2,
+        "question": "Quyidagi kod natijasi nima bo'ladi: console.log([] + {}) va console.log({} + [])?",
+        "options": {"A": "'[object Object]' va '[object Object]' (yoki kontekstga ko'ra 0)", "B": "undefined va NaN", "C": "TypeError va SyntaxError", "D": "'[]{}' va '{}[]'"},
+        "answer": "A"
+      },
+      {
+        "id": 3,
+        "question": "JavaScript Garbage Collector da qaysi obyektlar xotiradan tozalanmaydi (Memory Leak xavfi)?",
+        "options": {"A": "null qiymat o'zlashtirilgan o'zgaruvchilar", "B": "Global scope ga biriktirilgan yoki unutilgan closure orqali ushlab turilgan obyektlar", "C": "Faqat blok scope { } ichida qolgan let va const lar", "D": "WeakMap va WeakSet ichidagi kalitlar"},
+        "answer": "B"
+      },
+      {
+        "id": 4,
+        "question": "Object.freeze() va Object.seal() o'rtasidagi asosiy farq nimada?",
+        "options": {"A": "Object.seal() da yangi xususiyat qo'shib bo'lmaydi, lekin mavjud xususiyatlar qiymatini o'zgartirish mumkin; freeze da esa o'zgartirish ham taqiqlanadi", "B": "Hech qanday farqi yo'q", "C": "Object.freeze faqat massivlar uchun ishlaydi", "D": "Object.seal xotiradan obyektni butunlay o'chiradi"},
+        "answer": "A"
+      },
+      {
+        "id": 5,
+        "question": "Promise.all([p1, p2, p3]) va Promise.allSettled([p1, p2, p3]) farqi nima?",
+        "options": {"A": "Promise.all bitta promise reject bo'lsa darhol reject qaytaradi; allSettled esa barcha promiselar resolved yoki rejected bo'lishini kutib to'liq natijalar massivini qaytaradi", "B": "Promise.all faqat sinxron kodda ishlaydi", "C": "Promise.allSettled xatoni ushlay olmaydi", "D": "Ikkalasi aynan bir xil ishlaydi"},
+        "answer": "A"
+      },
+      {
+        "id": 6,
+        "question": "Debounce va Throttle texnikalarining asosiy farqi nima?",
+        "options": {"A": "Debounce so'nggi harakatdan keyin ma'lum pauza o'tgach ishga tushadi; Throttle esa harakat qanchalik ko'p bo'lmasin ma'lum vaqt oralig'ida (masalan har 300ms) faqat bir marta chaqiradi", "B": "Debounce animatsiyalar uchun, Throttle faqat formalar uchun ishlatiladi", "C": "Farqi faqat CSS da seziladi", "D": "Throttle har doim DOM ni bloklaydi"},
+        "answer": "A"
+      },
+      {
+        "id": 7,
+        "question": "JavaScript da 'temporal dead zone' (TDZ) nima?",
+        "options": {"A": "let va const o'zgaruvchilari e'lon qilinadigan qatorgacha bo'lgan va ularga murojaat qilinganda ReferenceError beradigan soha", "B": "setTimeout to'xtab qolgan vaqt", "C": "Server bilan aloqa uzilgan oraliq", "D": "O'chirilgan xotira sohasi"},
+        "answer": "A"
+      },
+      {
+        "id": 8,
+        "question": "Function.prototype.bind(), call() va apply() ning farqi nima?",
+        "options": {"A": "call parametrlarni vergul bilan, apply massiv ko'rinishida olib darhol funksiyani bajaradi; bind esa yangi this biriktirilgan funksiya qaytaradi", "B": "bind sinxron, call va apply asinxron ishlaydi", "C": "Ular faqat arrow funksiyalarda qo'llaniladi", "D": "bind faqat prototype larni meros qilib olishda ishlatiladi"},
+        "answer": "A"
+      },
+      {
+        "id": 9,
+        "question": "Proxy va Reflect obyektlarining asosiy vazifasi nima?",
+        "options": {"A": "Obyekt ustidagi asosiy operatsiyalarni (get, set, has, delete) tutib olish va metaprogramming imkoniyatlarini yaratish", "B": "Tarmoq so'rovlarini shifrlash", "C": "Fayllarni yuklashni tezlashtirish", "D": "Faqat JSON bilan ishlash"},
+        "answer": "A"
+      },
+      {
+        "id": 10,
+        "question": "Generators (function*) da return va yield farqi nima?",
+        "options": {"A": "yield qiymat qaytarib funksiya bajarilishini to'xtatib turadi va keyingi next() da davom etadi; return esa generatorni to'liq yakunlaydi ({done: true})", "B": "yield xato qaytaradi", "C": "return faqat massiv qaytaradi", "D": "Farqi yo'q"},
+        "answer": "A"
+      },
+      {
+        "id": 11,
+        "question": "WeakMap kaliti sifatida nimalardan foydalanish mumkin va nima uchun?",
+        "options": {"A": "Faqat obyektlardan (yoki ro'yxatdan o'tmagan simvollardan), chunki ular Garbage Collection tomonidan xotiradan avtomatik tozalanishi lozim", "B": "Faqat string va number dan", "C": "Faqat boolean qiymatlardan", "D": "Istalgan primitiv turdan"},
+        "answer": "A"
+      },
+      {
+        "id": 12,
+        "question": "Custom Event yaratish va uni DOM elementida tarqatish uchun qaysi sintaksis to'g'ri?",
+        "options": {"A": "elem.dispatchEvent(new CustomEvent('myEvent', { detail: { data: 123 } }))", "B": "elem.fireEvent('myEvent', 123)", "C": "elem.trigger('myEvent', { data: 123 })", "D": "document.createEvent('myEvent').send()"},
+        "answer": "A"
+      },
+      {
+        "id": 13,
+        "question": "JavaScript da prototype chain (prototiplar zanjiri) oxirgi tuguni qaysi qiymatga teng?",
+        "options": {"A": "Object.prototype.__proto__ ya'ni null", "B": "undefined", "C": "Window", "D": "Function.prototype"},
+        "answer": "A"
+      },
+      {
+        "id": 14,
+        "question": "Currying (karring) funksional dasturlash uslubi nima?",
+        "options": {"A": "Bir nechta argument oluvchi funksiyani bittadan argument oluvchi ketma-ket funksiyalar zanjiriga aylantirish", "B": "Massivni teskari tartibda saralash", "C": "Funksiyani rekursiv chaqirish", "D": "Xatolarni catch qilish"},
+        "answer": "A"
+      },
+      {
+        "id": 15,
+        "question": "Quyidagi kod natijasi nima bo'ladi: console.log(1 < 2 < 3) va console.log(3 > 2 > 1)?",
+        "options": {"A": "true va false (chunki 3 > 2 = true; true > 1 esa 1 > 1 = false)", "B": "true va true", "C": "false va false", "D": "TypeError"},
+        "answer": "A"
+      },
+      {
+        "id": 16,
+        "question": "requestAnimationFrame() ning setTimeout dan ekranni qayta chizishda (render) asosiy ustunligi nima?",
+        "options": {"A": "U brauzerning kadrlar yangilanish chastotasiga (60Hz/120Hz) to'liq moslashadi va sahifa fon holatida turganda to'xtab resurs tejaydi", "B": "U har doim 1 soniyada ishlaydi", "C": "Faqat server tomonida ishlaydi", "D": "CSS o'rnini to'liq bosadi"},
+        "answer": "A"
+      },
+      {
+        "id": 17,
+        "question": "ArrayBuffer va TypedArray (Uint8Array, Float64Array) nima maqsadda qo'llaniladi?",
+        "options": {"A": "Ikkilik (binary) ma'lumotlar bilan xotirada past darajada (low-level) yuqori tezlikda ishlash uchun", "B": "Faqat JSON fayllarni siqish uchun", "C": "Local storage ga ma'lumot yozish uchun", "D": "CSS selektorlarini tezlashtirish uchun"},
+        "answer": "A"
+      },
+      {
+        "id": 18,
+        "question": "Service Worker ning Web Worker dan asosiy farqi nima?",
+        "options": {"A": "Service Worker tarmoq so'rovlarini tutib keshlay oladi (offline rejim, PWA) va mustaqil fonda ishlaydi; Web Worker esa faqat og'ir hisob-kitoblar uchun alohida oqimdir", "B": "Web Worker faqat DOM bilan ishlaydi", "C": "Service Worker faqat Safari da ishlaydi", "D": "Farqi yo'q"},
+        "answer": "A"
+      },
+      {
+        "id": 19,
+        "question": "Symbol.iterator metodi nima uchun xizmat qiladi?",
+        "options": {"A": "Obyektni 'for...of' sikli yoki spread operatori orqali iteratsiya qilinadigan qilish uchun", "B": "Obyektni satrga aylantirish uchun", "C": "Obyekt xususiyatlarini yashirish uchun", "D": "Klass konstruktorini chaqirish uchun"},
+        "answer": "A"
+      },
+      {
+        "id": 20,
+        "question": "JavaScript da Deep Clone (chuqur nusxa olish) ning eng zamonaviy va xavfsiz o'rnatilgan brauzer metodi qaysi?",
+        "options": {"A": "structuredClone()", "B": "JSON.parse(JSON.stringify())", "C": "Object.assign()", "D": "Spread operatori (...)"},
+        "answer": "A"
+      }
+    ]
+  },
+  "python": {
+    "title": "Python",
+    "questions": [
+      {
+        "id": 1,
+        "question": "Python da GIL (Global Interpreter Lock) nima va uning ko'p oqimli (multithreading) dasturlarga ta'siri qanday?",
+        "options": {"A": "Bir vaqtning o'zida faqat bitta oqimga (thread) Python baytkodini bajarishga ruxsat beruvchi mexanizm; CPU-bound vazifalarda multithreading tezlik bermaydi", "B": "Xotirani avtomatik tozalovchi algoritm", "C": "Fayllarni boshqa jarayonlardan qulflovchi tizim", "D": "Asinxron kodni to'xtatuvchi kalit"},
+        "answer": "A"
+      },
+      {
+        "id": 2,
+        "question": "Metaklasslar (Metaclasses) Python da nima vazifani bajaradi?",
+        "options": {"A": "Sinflarni yaratuvchi 'sinflar' bo'lib, yangi sinf e'lon qilinayotganda uning yaratilishini boshqaradi va o'zgartiradi", "B": "Faqat bir nechta merosxo'rlikni taqiqlaydi", "C": "Kutubxonalarni avtomatik yuklaydi", "D": "Xatolarni catch qiladi"},
+        "answer": "A"
+      },
+      {
+        "id": 3,
+        "question": "Python da __slots__ dan foydalanishning asosiy maqsadi va samaradorligi nimada?",
+        "options": {"A": "Har bir obyekt uchun standart __dict__ yaratilishini cheklab, operativ xotirani (RAM) sezilarli tejash va atributlarga kirishni tezlashtirish", "B": "Sinf metodlarini xususiy (private) qilish", "C": "Obyektni o'zgarmas (immutable) qilish", "D": "JSON ga o'girishni osonlashtirish"},
+        "answer": "A"
+      },
+      {
+        "id": 4,
+        "question": "Python da MRO (Method Resolution Order) qaysi algoritm asosida ishlaydi?",
+        "options": {"A": "C3 Linearization algoritmi", "B": "Dijkstra algoritmi", "C": "Binary Search", "D": "Depth First Search (DFS)"},
+        "answer": "A"
+      },
+      {
+        "id": 5,
+        "question": "Quyidagi kod natijasi nima bo'ladi: def func(val, lst=[]): lst.append(val); return lst; print(func(1)); print(func(2))?",
+        "options": {"A": "[1] va [1, 2] (chunki default parametr bo'lgan massiv faqat funksiya yaratilganda bir marta e'lon qilinadi)", "B": "[1] va [2]", "C": "[1] va [[1], [2]]", "D": "TypeError"},
+        "answer": "A"
+      },
+      {
+        "id": 6,
+        "question": "Python Descriptor protokoli qaysi sehrli (magic) metodlardan iborat?",
+        "options": {"A": "__get__, __set__, __delete__", "B": "__init__, __new__, __del__", "C": "__enter__, __exit__", "D": "__iter__, __next__"},
+        "answer": "A"
+      },
+      {
+        "id": 7,
+        "question": "asyncio da task va coroutine o'rtasidagi asosiy farq nima?",
+        "options": {"A": "Coroutine bu async def funksiyasi natijasi bo'lib await qilinmaguncha ishlamaydi; Task esa asyncio.create_task() orqali event loop da mustaqil bajarilishga rejalashtirilgan o'ramdir", "B": "Farqi yo'q", "C": "Task faqat multithreading da ishlaydi", "D": "Coroutine CPU-bound vazifalar uchundir"},
+        "answer": "A"
+      },
+      {
+        "id": 8,
+        "question": "__new__ va __init__ metodlarining vazifalari qanday taqsimlangan?",
+        "options": {"A": "__new__ yangi obyekt nusxasini xotirada yaratadi va qaytaradi; __init__ esa yaratilgan obyekt atributlarini initsializatsiya qiladi", "B": "__init__ obyektni xotirada yaratadi", "C": "__new__ faqat xatolik bo'lganda ishlaydi", "D": "__init__ faqat sinf metodlarida qo'llanadi"},
+        "answer": "A"
+      },
+      {
+        "id": 9,
+        "question": "functools.lru_cache dekoratori qanday ishlaydi va uning 'lru' qisqartmasi nimani anglatadi?",
+        "options": {"A": "Least Recently Used — funksiya natijalarini keshlaydi va chegara to'lganda eng uzoq vaqt ishlatilmagan natijalarni o'chirib yangilariga joy bo'shatadi", "B": "Linear Running Unit — oqimlarni taqsimlaydi", "C": "Local Ram Utility — xotirani tozalaydi", "D": "Last Returned Unit — faqat oxirgi qiymatni saqlaydi"},
+        "answer": "A"
+      },
+      {
+        "id": 10,
+        "question": "Python da Context Manager yaratishda __exit__ metodi True qiymat qaytarsa nima yuz beradi?",
+        "options": {"A": "with blokida yuz bergan exception (xatolik) bostiriladi (suppress qilinadi) va dastur to'xtab qolmaydi", "B": "Fayl avtomatik o'chiriladi", "C": "Xatolik qaytadan throw qilinadi", "D": "Dastur darhol chiqib ketadi"},
+        "answer": "A"
+      },
+      {
+        "id": 11,
+        "question": "Quyidagi ifoda natijasi nima: a = [1, 2, [3]]; b = list(a); b[2].append(4); print(a)?",
+        "options": {"A": "[1, 2, [3, 4]] (chunki list(a) sayoz nusxa (shallow copy) oladi va ichki ro'yxat manzili o'zgarmaydi)", "B": "[1, 2, [3]]", "C": "TypeError", "D": "[1, 2, 3, 4]"},
+        "answer": "A"
+      },
+      {
+        "id": 12,
+        "question": "Generator va Coroutine larda yield from ifodasi nimaga xizmat qiladi?",
+        "options": {"A": "Boshqa sub-generator yoki iterabledan qiymatlarni delegatsiya qilib to'g'ridan-to'g'ri chaqiruvchiga uzatish", "B": "Fayldan o'qishni to'xtatish", "C": "Xatolarni catch qilish", "D": "Event loop ni qayta ishga tushirish"},
+        "answer": "A"
+      },
+      {
+        "id": 13,
+        "question": "Python Garbage Collector (gc) siklik havolalarni (circular references) qanday aniqlaydi va tozalaydi?",
+        "options": {"A": "Reference counting yetarli bo'lmaganda, 3 ta avlodga (generations 0, 1, 2) bo'lingan va erishib bo'lmaydigan obyektlar grafigini tahlil qiluvchi siklik kollektor orqali", "B": "Faqat dastur yopilganda tozalaydi", "C": "O'zgaruvchilarni vaqtiga qarab o'chiradi", "D": "Faqat memory error berganda ishga tushadi"},
+        "answer": "A"
+      },
+      {
+        "id": 14,
+        "question": "sys.intern() funksiyasi stringlar bilan ishlashda qanday samara beradi?",
+        "options": {"A": "Bir xil stringlarni xotirada faqat bitta joyda saqlaydi va satrlarni solishtirishni (==) ko'rsatkichlar solishtiruvi (is) kabi O(1) ga tezlashtiradi", "B": "Stringni shifrlaydi", "C": "Satrni UTF-8 dan ASCII ga o'giradi", "D": "Katta-kichik harflarni to'g'rilaydi"},
+        "answer": "A"
+      },
+      {
+        "id": 15,
+        "question": "multiprocessing va threading modullarining tanlanish mezonlari qanday?",
+        "options": {"A": "CPU-bound (og'ir hisob-kitoblar) uchun multiprocessing; I/O-bound (tarmoq, disk so'rovlari) uchun threading yoki asyncio tanlanadi", "B": "Har doim faqat threading tanlanadi", "C": "Multiprocessing faqat Linux da ishlaydi", "D": "Farqi yo'q"},
+        "answer": "A"
+      },
+      {
+        "id": 16,
+        "question": "Python da type('MyClass', (object,), {'x': 42}) nima ish bajaradi?",
+        "options": {"A": "Dinamik ravishda yangi 'MyClass' nomli sinf e'lon qiladi va unda x=42 atributini o'rnatadi", "B": "Obyektning turini tekshiradi", "C": "Xatolik beradi", "D": "Faqat lug'at yaratadi"},
+        "answer": "A"
+      },
+      {
+        "id": 17,
+        "question": "Qaysi holatda @staticmethod o'rniga @classmethod ishlatish maqsadga muvofiq?",
+        "options": {"A": "Metodda sinfning o'ziga (cls) murojaat qilish yoki muqobil konstruktor (factory method) yaratish kerak bo'lganda", "B": "Faqat merosxo'rlik bo'lmaganda", "C": "Xotirani tejash uchun", "D": "Faqat xususiy metodlarda"},
+        "answer": "A"
+      },
+      {
+        "id": 18,
+        "question": "Python 3.10+ da kiritilgan Structural Pattern Matching (match/case) ifodasining if/elif dan ustunligi nimada?",
+        "options": {"A": "Faqat qiymatlarni emas, balki ma'lumotlar tuzilmasi, shakli, sinf nusxalari va ichki atributlarini bir vaqtda ochib tekshirish (destructuring)", "B": "Faqat sonlarni tez solishtiradi", "C": "U sinxron kodni asinxron qiladi", "D": "Xatolarni oldini oladi"},
+        "answer": "A"
+      },
+      {
+        "id": 19,
+        "question": "Weakref (kuchsiz havola) qachon va nima maqsadda qo'llaniladi?",
+        "options": {"A": "Obyektga havola saqlash, lekin uning Garbage Collector tomonidan xotiradan tozalanishiga to'sqinlik qilmaslik uchun (masalan kesh tizimlarida)", "B": "Parollarni shifrlashda", "C": "Faqat fayllarni yopishda", "D": "Global o'zgaruvchilar uchun"},
+        "answer": "A"
+      },
+      {
+        "id": 20,
+        "question": "Walrus operatori (:=) Python ga nima maqsadda kiritilgan?",
+        "options": {"A": "Ifoda (expression) ichida qiymatni o'zgaruvchiga o'zlashtirish va shu vaqtning o'zida uni tekshirish (masalan while (n := len(a)) > 0)", "B": "Tenglikni qat'iy tekshirish uchun", "C": "Massivlarni birlashtirish uchun", "D": "Bitwise amallari uchun"},
+        "answer": "A"
+      }
+    ]
+  }
+}
