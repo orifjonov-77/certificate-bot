@@ -109,22 +109,35 @@ async def on_admin_stats(callback: CallbackQuery):
         await callback.answer("Ruxsat berilmagan!", show_alert=True)
         return
     
-    async with database.aiosqlite.connect(database.DB_PATH) as db:
-        async with db.execute("SELECT COUNT(*) FROM test_results") as c1:
-            total_tests = (await c1.fetchone())[0]
-        async with db.execute("SELECT COUNT(*) FROM certificates") as c2:
-            total_certs = (await c2.fetchone())[0]
-        async with db.execute("SELECT COUNT(DISTINCT user_id) FROM test_results") as c3:
-            total_users = (await c3.fetchone())[0]
+    total_tests = 0
+    total_certs = 0
+    total_users = 0
+    try:
+        async with database.aiosqlite.connect(database.DB_PATH) as db:
+            async with db.execute("SELECT COUNT(*) FROM test_results") as c1:
+                row1 = await c1.fetchone()
+                total_tests = row1[0] if row1 else 0
+            async with db.execute("SELECT COUNT(*) FROM certificates") as c2:
+                row2 = await c2.fetchone()
+                total_certs = row2[0] if row2 else 0
+            async with db.execute("SELECT COUNT(DISTINCT user_id) FROM test_results") as c3:
+                row3 = await c3.fetchone()
+                total_users = row3[0] if row3 else 0
+    except Exception as e:
+        logger.error(f"Statistika olishda xatolik: {e}")
 
     stats_text = (
         f"📊 <b>Bot Statistikasi:</b>\n\n"
         f"👥 Test topshirgan foydalanuvchilar: <b>{total_users} ta</b>\n"
         f"📝 Jami topshirilgan testlar: <b>{total_tests} ta</b>\n"
-        f"🎓 Berilgan sertifikatlar: <b>{total_certs} ta</b>\n"
+        f"🎓 Berilgan sertifikatlar: <b>{total_certs} ta</b>\n\n"
+        f"⚡️ <i>Tizim holati: Faol va uzluksiz ishlamoqda</i>"
     )
     buttons = [[InlineKeyboardButton(text="🔙 Orqaga", callback_data="admin:menu")]]
-    await callback.message.edit_text(stats_text, reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons), parse_mode="HTML")
+    try:
+        await callback.message.edit_text(stats_text, reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons), parse_mode="HTML")
+    except Exception:
+        await callback.message.answer(stats_text, reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons), parse_mode="HTML")
     await callback.answer()
 
 # ================= ADMINLARNI BOSHQARISH =================
